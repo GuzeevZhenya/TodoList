@@ -1,0 +1,61 @@
+.form-page {
+  margin: 0;
+  padding: 0;
+  background-color: #6a0dad;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.form-container {
+  background-color: #282c34;
+  padding: 20px 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+  border: 2px solid #7e57c2;
+}
+
+.registration-form {
+  color: #ffffff;
+}
+
+.registration-form .ant-form-item-label > label {
+  color: #ffffff;
+}
+
+.registration-form .ant-form-item-label > label::after {
+  content: '';
+}
+
+.registration-form .ant-input,
+.registration-form .ant-input-password {
+   
+  color: black;
+  border: 1px solid #4f5462;
+}
+
+.registration-form .ant-btn-primary {
+  background-color: #7e57c2;
+  border-color: #7e57c2;
+}
+
+.registration-form .ant-btn-primary:hover {
+  background-color: #673ab7;
+  border-color: #673ab7;
+}
+
+.registration-form .ant-radio-button-wrapper {
+  color: #ffffff;
+  background-color: #282c34;
+  border: 1px solid #4f5462;
+}
+
+.registration-form .ant-radio-button-wrapper-checked {
+  color: #ffffff;
+  background-color: #7e57c2;
+  border-color: #7e57c2;
+}

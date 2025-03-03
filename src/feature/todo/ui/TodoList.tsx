@@ -1,9 +1,11 @@
-import React, { useState, KeyboardEvent } from 'react';
+import React, { useState, KeyboardEvent, useEffect } from 'react';
 import { List, Button, Input, Space, Modal, Form } from 'antd';
 import { useAppDispatch, useAppSelectore } from '../../hooks/redux';
-import { addTodolist, changeTodolistFilter, removeTodolist, updateTodolist } from '../model/todoSlice';
-import { FilterValuesType, Todolist } from '../api/todolistsApi.types';
+import { addTodolist, changeTodolistFilter, removeTodolist, todolistThunk, updateTodolist } from '../model/todoSlice';
+import { Todolist } from '../api/todolistsApi.types';
 import { withLogging } from '../../../Logger/Logger';
+import { Link } from 'react-router-dom';
+import { ErrorSnackbar } from '../../../common/components/ErrorSnackbar';
 
 interface TodoListProps {
   logEvent: (action: string, data?: any) => void;
@@ -18,34 +20,45 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
 
   const dispatch = useAppDispatch();
 
-  const handleAddTask = () => {
-    if (newTask.trim()) {
-      const newTaskItem: Todolist = { id: Date.now().toString(), title: newTask, filter: "active" };
-      dispatch(addTodolist({ todolist: newTaskItem }));
-      setNewTask('');
-      logEvent('Add element', newTaskItem);
-      setError(null);
-    } else {
+  useEffect(() => {
+    dispatch(todolistThunk.fetchTodolist())
+    console.log(tasks)
+  }, [])
 
+  const handleAddTask = async () => {
+    if (newTask.trim()) {
+      try {
+        await dispatch(todolistThunk.addTodolistThunk({ title: newTask })).unwrap();
+        setNewTask('');
+        logEvent('Add element', { title: newTask });
+        setError(null);
+      } catch (error) {
+        setError(error as string);
+      }
+    } else {
       setError("Title is required")
     }
   };
 
   const handleDeleteTask = (id: string) => {
-    dispatch(removeTodolist({ id }));
+    dispatch(todolistThunk.removeTodolistThunk(id))
     const deletedTask = tasks.find((dl) => dl.id === id);
     logEvent('Удаление элемента', deletedTask);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (editingTask) {
-      dispatch(updateTodolist({ todolist: editingTask }));
-      setIsModalVisible(false);
-      setEditingTask(null);
-      logEvent('Изменение элемента', editingTask);
-      setError(null);
+      try {
+        await dispatch(todolistThunk.updateTodolistThunk(editingTask)).unwrap();
+        setIsModalVisible(false);
+        setEditingTask(null);
+        logEvent('Изменение элемента', editingTask);
+        setError(null);
+      } catch (err) {
+        setError(err as string);
+      }
     } else {
-      setError("Title is required");
+      setError('Title is required');
     }
   };
 
@@ -66,9 +79,9 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
     }
   }
 
-  const changeFilterHandler = (id: string, currentFilter: FilterValuesType) => {
-    const newFilter = currentFilter === "active" ? "completed" : "active";
-    dispatch(changeTodolistFilter({ id, filter: newFilter }))
+  const changeFilterHandler = (id: string, currentFilter: boolean) => {
+    // const newFilter = currentFilter === "active" ? "completed" : "active";
+    // dispatch(changeTodolistFilter({ id, filter: newFilter }))
   }
 
   const editItemOnKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -80,10 +93,10 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
   return (
     <div
       style={{
-        display: 'flex', // Включаем Flexbox
-        flexDirection: 'column', // Располагаем элементы вертикально
-        alignItems: 'center', // Центрируем по горизонтали
-        justifyContent: 'center', // Центрируем по вертикали
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         padding: '24px',
       }}
     >
@@ -128,10 +141,10 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
               width: '100%',
               cursor: "pointer",
               padding: 0,
-              textDecoration: task.filter === "active" ? "none" : "line-through",
+              textDecoration: task.isCompleted === false ? "none" : "line-through",
             }}
           >
-            <span onClick={() => changeFilterHandler(task.id, task.filter)}>
+            <span onClick={() => changeFilterHandler(task.id, task.isCompleted)}>
               {task.title}
             </span>
           </List.Item>
@@ -170,6 +183,7 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
           </Form.Item>
         </Form>
       </Modal>
+      <ErrorSnackbar />
     </div>
   );
 }

@@ -1,0 +1,23 @@
+/* Центрирование контейнера */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Занимает всю высоту экрана */
+  background-color: #f0f2f5; /* Фоновая заливка */
+}
+
+/* Стили для самой формы */
+.login-form {
+  width: 300px; /* Ограничиваем ширину формы */
+  padding: 20px;
+  background-color: #ffffff; /* Белый фон формы */
+  border-radius: 8px; /* Скругленные углы */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Тень для эффекта */
+}
+
+/* Заголовок формы */
+.login-form h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
