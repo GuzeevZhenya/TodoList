@@ -1,10 +1,9 @@
 import React, { useState, KeyboardEvent, useEffect } from 'react';
 import { List, Button, Input, Space, Modal, Form } from 'antd';
 import { useAppDispatch, useAppSelectore } from '../../hooks/redux';
-import { addTodolist, changeTodolistFilter, removeTodolist, todolistThunk, updateTodolist } from '../model/todoSlice';
+import { todolistThunk, toggleTodoCompletion } from '../model/todoSlice';
 import { Todolist } from '../api/todolistsApi.types';
 import { withLogging } from '../../../Logger/Logger';
-import { Link } from 'react-router-dom';
 import { ErrorSnackbar } from '../../../common/components/ErrorSnackbar';
 
 interface TodoListProps {
@@ -22,7 +21,6 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
 
   useEffect(() => {
     dispatch(todolistThunk.fetchTodolist())
-    console.log(tasks)
   }, [])
 
   const handleAddTask = async () => {
@@ -80,9 +78,8 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
   }
 
   const changeFilterHandler = (id: string, currentFilter: boolean) => {
-    // const newFilter = currentFilter === "active" ? "completed" : "active";
-    // dispatch(changeTodolistFilter({ id, filter: newFilter }))
-  }
+    dispatch(toggleTodoCompletion(id));
+  };
 
   const editItemOnKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {

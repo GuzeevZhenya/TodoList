@@ -7,6 +7,7 @@ import {
   deleteTodolistAPI,
   getTodolistAPI,
   updateTodolistAPI,
+  updateTodolistFilterAPI,
 } from '../api/todolistsApi';
 import {clearTodolists} from '../../../common/common.action';
 
@@ -72,6 +73,13 @@ export const todoSlice = createSlice({
         state.todo[index] = action.payload;
       }
     });
+    builder.addCase(toggleTodoCompletion.fulfilled, (state, action) => {
+      const updatedTodo = action.payload; // Объект Todolist
+      const index = state.todo.findIndex((tl) => tl.id === updatedTodo.id);
+      if (index !== -1) {
+        state.todo[index] = {...state.todo[index], ...updatedTodo};
+      }
+    });
     builder.addCase(clearTodolists, (state) => {
       state.todo = [];
     });
@@ -84,17 +92,16 @@ export const fetchTodolist = createAsyncThunk<
   {
     dispatch: AppDispatch;
     state: RootState;
-    rejectValue: string; // Исправлено: теперь rejectValue принимает строку
+    rejectValue: string;
   }
 >(`${todoSlice.name}/login`, async (_, thunkAPI) => {
   const {dispatch, rejectWithValue} = thunkAPI;
+  // dispatch(appActions.setAppStatus({status: 'loading'})); // исправить момент с загрузкой
 
   try {
-    dispatch(appActions.setAppStatus({status: 'loading'}));
-    const response = await getTodolistAPI(); // Вызов API
+    const response = await getTodolistAPI();
     dispatch(appActions.setAppStatus({status: 'succeeded'}));
-    console.log(response);
-    return response.data; // Возвращаем данные для обработки в extraReducers
+    return response.data;
   } catch (error: any) {
     dispatch(appActions.setAppStatus({status: 'failed'}));
     return rejectWithValue(error.message || 'Ошибка при загрузке задач');
@@ -102,47 +109,44 @@ export const fetchTodolist = createAsyncThunk<
 });
 
 export const addTodolistThunk = createAsyncThunk<
-  Todolist, // Возвращаемый тип
-  {title: string}, // Тип аргумента
+  Todolist,
+  {title: string},
   {
     dispatch: AppDispatch;
     state: RootState;
-    rejectValue: string; // Тип ошибки
+    rejectValue: string;
   }
 >(`${todoSlice.name}/addTodolist`, async (arg, thunkAPI) => {
   const {dispatch, rejectWithValue} = thunkAPI;
 
   try {
     dispatch(appActions.setAppStatus({status: 'loading'}));
-    console.log(arg);
-    const response = await addTodolistAPI(arg); // Вызов API
-
+    const response = await addTodolistAPI(arg);
     dispatch(appActions.setAppStatus({status: 'succeeded'}));
-    return response.data; // Возвращаем данные для обработки в extraReducers
+    return response.data;
   } catch (error: any) {
     dispatch(appActions.setAppStatus({status: 'failed'}));
     const errorMessage =
       error.response?.data?.errors[0].msg || 'Неверные учетные данные';
-    console.log(error.response?.data?.errors[0].msg);
     return rejectWithValue(errorMessage);
   }
 });
 
 export const removeTodolistThunk = createAsyncThunk<
-  {id: string}, // Возвращаемый тип
+  {id: string},
   string,
   {
     dispatch: AppDispatch;
     state: RootState;
-    rejectValue: string; // Тип ошибки
+    rejectValue: string;
   }
 >(`${todoSlice.name}/removeTodolist`, async (id, thunkAPI) => {
   const {dispatch, rejectWithValue} = thunkAPI;
   try {
     dispatch(appActions.setAppStatus({status: 'loading'}));
-    await deleteTodolistAPI(id); // Вызов API
+    await deleteTodolistAPI(id);
     dispatch(appActions.setAppStatus({status: 'succeeded'}));
-    return {id}; // Возвращаем id для обработки в extraReducers
+    return {id};
   } catch (error: any) {
     dispatch(appActions.setAppStatus({status: 'failed'}));
     return rejectWithValue(error.message || 'Ошибка при удалении задачи');
@@ -150,32 +154,62 @@ export const removeTodolistThunk = createAsyncThunk<
 });
 
 export const updateTodolistThunk = createAsyncThunk<
-  Todolist, // Возвращаемый тип
+  Todolist,
   Todolist,
   {
     dispatch: AppDispatch;
     state: RootState;
-    rejectValue: string; // Тип ошибки
+    rejectValue: string;
   }
 >(`${todoSlice.name}/updateTodolist`, async (todolist, thunkAPI) => {
   const {dispatch, rejectWithValue} = thunkAPI;
   try {
     dispatch(appActions.setAppStatus({status: 'loading'}));
-    const response = await updateTodolistAPI(todolist.id, todolist.title); // Вызов API
+    const response = await updateTodolistAPI(todolist.id, todolist.title);
     dispatch(appActions.setAppStatus({status: 'succeeded'}));
-    console.log(response);
-    return response.data; // Возвращаем данные для обработки в extraReducers
+    return response.data;
   } catch (error: any) {
-    console.log(error);
     dispatch(appActions.setAppStatus({status: 'failed'}));
     return rejectWithValue(error.message || 'Ошибка при обновлении задачи');
   }
 });
+
+export const toggleTodoCompletion = createAsyncThunk<
+  Todolist,
+  string,
+  {
+    dispatch: AppDispatch;
+    state: RootState;
+    rejectValue: string;
+  }
+>(`${todoSlice.name}/toggleTodoCompletion`, async (id, thunkAPI) => {
+  const {dispatch, rejectWithValue} = thunkAPI;
+  try {
+    dispatch(appActions.setAppStatus({status: 'loading'}));
+    const response = await updateTodolistFilterAPI(id);
+
+    if (Array.isArray(response.data) && response.data.length > 0) {
+      const updatedTodo = response.data[0];
+      dispatch(appActions.setAppStatus({status: 'succeeded'}));
+      return updatedTodo;
+    } else {
+      throw new Error('Некорректный формат данных');
+    }
+  } catch (error: any) {
+    dispatch(
+      appActions.setAppError({
+        error: error.message || 'Ошибка при обновлении задачи',
+      }),
+    );
+    return rejectWithValue(error.message || 'Ошибка при обновлении задачи');
+  }
+});
+
 export const {
   addTodolist,
   removeTodolist,
   updateTodolist,
-  changeTodolistFilter,
+  // changeTodolistFilter,
 } = todoSlice.actions;
 
 export const todoReducer = todoSlice.reducer;

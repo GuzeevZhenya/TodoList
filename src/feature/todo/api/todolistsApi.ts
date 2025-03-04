@@ -16,3 +16,7 @@ export const deleteTodolistAPI = (id: string) => {
 export const updateTodolistAPI = (id: string, title: string) => {
   return instance.patch(`/todos/${id}`, {title});
 };
+
+export const updateTodolistFilterAPI = (id: string) => {
+  return instance.patch(`/todos/${id}/isCompleted`);
+};

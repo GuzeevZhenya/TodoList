@@ -4,29 +4,7 @@ import {appActions} from '../../../app/appSlice';
 import {handleServerNetworkError} from '../../utils/error-utils';
 import {AppDispatch, RootState} from '../../../app/store';
 import {clearTodolists} from '../../../common/common.action';
-
-interface RegistrationPayload {
-  username: string;
-  email: string;
-  password: string;
-  gender: string;
-  age: number;
-}
-
-interface RegistrationResponse {
-  id: number;
-  username: string;
-  email: string;
-}
-
-interface LoginPayload {
-  email: string;
-  password: string;
-}
-
-interface LoginResponse {
-  token: string;
-}
+import {RegistrationResponse, LoginPayload, RegistrationPayload} from './Iauth';
 
 export const authSlice = createSlice({
   name: 'auth',
@@ -34,8 +12,8 @@ export const authSlice = createSlice({
     isLoggedIn: false,
   },
   reducers: {
-    setIsLoggedIn(state, action: PayloadAction<{isLogged: boolean}>) {
-      state.isLoggedIn = action.payload.isLogged;
+    setIsLoggedIn(state, action: PayloadAction<{isLoggedIn: boolean}>) {
+      state.isLoggedIn = action.payload.isLoggedIn;
     },
     logout(state) {
       state.isLoggedIn = false;
@@ -43,8 +21,6 @@ export const authSlice = createSlice({
     },
   },
 });
-
-export const {setIsLoggedIn} = authSlice.actions;
 
 const registration = createAsyncThunk<
   RegistrationResponse,
@@ -89,10 +65,11 @@ const loginTC = createAsyncThunk<
 
     const response = await login(arg);
     dispatch(appActions.setAppStatus({status: 'succeeded'}));
-
+    console.log(response.data && response.data.token);
     if (response.data && response.data.token) {
       localStorage.setItem('jwtToken', response.data.token);
-      dispatch(setIsLoggedIn({isLogged: true}));
+      dispatch(setIsLoggedIn({isLoggedIn: true}));
+      dispatch(appActions.setAppInitialized({isInitialized: true}));
     }
     return {isLoggedIn: true};
   } catch (error: any) {
@@ -103,17 +80,17 @@ const loginTC = createAsyncThunk<
   }
 });
 
-const logout = createAsyncThunk<{isLoggedIn: boolean}, void>(
+const logoutTC = createAsyncThunk<{isLoggedIn: boolean}, void>(
   `${authSlice.name}/logout`,
   async (_, thunkAPI) => {
     const {dispatch} = thunkAPI;
-    dispatch(clearTodolists());
     dispatch(authSlice.actions.logout());
-
+    dispatch(appActions.setAppInitialized({isInitialized: false}));
+    dispatch(clearTodolists());
     return {isLoggedIn: false};
   },
 );
 
 export const authReducer = authSlice.reducer;
-export const {} = authSlice.actions;
-export const authThunk = {registration, loginTC, logout};
+export const authThunk = {registration, loginTC, logoutTC};
+export const {setIsLoggedIn} = authSlice.actions;

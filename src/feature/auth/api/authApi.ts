@@ -12,3 +12,7 @@ export const register = (data: any) => {
 export const logout = () => {
   return instance.post('/auth/logout');
 };
+
+// export const me = () => {
+//   return instance.get('')
+// }

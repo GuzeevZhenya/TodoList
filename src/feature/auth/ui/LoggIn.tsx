@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { Button, Form, Input, message } from 'antd';
-import { login } from '../api/authApi';
 import { useAppDispatch, useAppSelectore } from '../../hooks/redux';
 import { authThunk } from '../model/authSlice';
 import './LoginPage.css';
 import { Navigate } from 'react-router-dom';
 
 export const LoginPage = () => {
-  const [loading, setLoading] = useState(false);
   const dispatch = useAppDispatch();
   const isLoggedIn = useAppSelectore(state => state.auth.isLoggedIn);
 
@@ -18,7 +16,6 @@ export const LoginPage = () => {
   if (isLoggedIn) {
     return <Navigate to={"/"} />;
   }
-
 
   return (
     <div className="login-container">
@@ -37,7 +34,7 @@ export const LoginPage = () => {
           <Input.Password placeholder="Пароль" />
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading} block>
+          <Button type="primary" htmlType="submit" block>
             Войти
           </Button>
         </Form.Item>
