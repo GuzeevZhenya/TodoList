@@ -4,6 +4,7 @@ import {LoginPage} from '../../feature/auth/ui/LoggIn';
 import {ProtectedRoute} from './ProtectedRoute';
 import {TodoListLogger as Todolist} from '../../feature/todo/ui/TodoList';
 import {App} from '../../app/App';
+import {PublicRoute} from './PublicRoute';
 
 export const router = createBrowserRouter([
   {
@@ -11,12 +12,17 @@ export const router = createBrowserRouter([
     element: <App />,
     children: [
       {
-        path: '/register',
-        element: <RegistrationForm />,
-      },
-      {
-        path: '/login',
-        element: <LoginPage />,
+        element: <PublicRoute />,
+        children: [
+          {
+            path: '/login',
+            element: <LoginPage />,
+          },
+          {
+            path: '/register',
+            element: <RegistrationForm />,
+          },
+        ],
       },
       {
         element: <ProtectedRoute />,

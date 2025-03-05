@@ -4,11 +4,14 @@ import { useAppDispatch } from '../../hooks/redux';
 import { authThunk } from '../model/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useRegistrationMutation } from '../api/logAPI';
 
 export const RegistrationForm = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [isRegistered, setIsRegistered] = useState(false);
+
+  const [registration] = useRegistrationMutation()
 
   const handleSubmit = async (values: any) => {
     const user = {
@@ -17,7 +20,7 @@ export const RegistrationForm = () => {
     };
 
     try {
-      await dispatch(authThunk.registration(user)).unwrap();
+      await registration(user).unwrap();
       setIsRegistered(true);
     } catch (error) {
       console.error('Ошибка регистрации:', error);

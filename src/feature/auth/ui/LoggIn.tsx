@@ -1,20 +1,31 @@
 import React, { useState } from 'react';
 import { Button, Form, Input, message } from 'antd';
 import { useAppDispatch, useAppSelectore } from '../../hooks/redux';
-import { authThunk } from '../model/authSlice';
+import { authThunk, setIsLoggedIn } from '../model/authSlice';
 import './LoginPage.css';
 import { Navigate } from 'react-router-dom';
+import { useLoginMutation } from '../api/logAPI';
 
 export const LoginPage = () => {
   const dispatch = useAppDispatch();
   const isLoggedIn = useAppSelectore(state => state.auth.isLoggedIn);
 
+  const [login, { isLoading, error }] = useLoginMutation()
+
   const handleSubmit = async (values: any) => {
-    dispatch(authThunk.loginTC(values));
+    try {
+      const response = await login(values).unwrap();
+      if (response.token) {
+        localStorage.setItem('jwtToken', response.token);
+        dispatch(setIsLoggedIn({ isLoggedIn: true }));
+      }
+    } catch (error) {
+      message.error('Ошибка при входе');
+    }
   };
 
   if (isLoggedIn) {
-    return <Navigate to={"/"} />;
+    return <Navigate to="/" replace />;
   }
 
   return (

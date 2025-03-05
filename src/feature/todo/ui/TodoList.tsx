@@ -1,7 +1,5 @@
 import React, { useState, KeyboardEvent } from 'react';
-import { List, Button, Input, Space, Modal, Form } from 'antd';
-import { useAppDispatch } from '../../hooks/redux';
-import { toggleTodoCompletion } from '../model/todoSlice';
+import { List, Button, Input, Space, Modal, Form, Spin } from 'antd';
 import { Todolist } from '../api/todolistsApi.types';
 import { withLogging } from '../../../Logger/Logger';
 import { ErrorSnackbar } from '../../../common/components/ErrorSnackbar';
@@ -17,11 +15,18 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
   const [newTask, setNewTask] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const { data: tasks, isLoading, isError } = useGetAllTodosQuery();
-  const [removeTodo] = useRemoveTodoMutation();
-  const [addTodos] = useAddTodosMutation();
-  const [updateTodoTitle] = useUpdateTodoTitleMutation();
-  const [toggleTodoCompletion] = useToggleTodoCompletionMutation()
+  const { data: tasks, isLoading, isFetching } = useGetAllTodosQuery();
+
+  const [removeTodo, { isLoading: isRemoving, isSuccess, isError }] = useRemoveTodoMutation();
+  const [addTodos, { isLoading: isAdding }] = useAddTodosMutation();
+  const [updateTodoTitle, { isLoading: isUpdating }] = useUpdateTodoTitleMutation();
+  const [toggleTodoCompletion, { isLoading: isToggling }] = useToggleTodoCompletionMutation();
+
+  if (isLoading || isFetching) {
+    return <Spin size="large" tip="Загрузка..." />;
+  }
+
+  console.log(isRemoving)
 
   const handleAddTask = async () => {
     if (newTask.trim()) {
@@ -83,7 +88,11 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
   };
 
   const changeFilterHandler = async (id: string, currentFilter: boolean) => {
-    await toggleTodoCompletion({ id })
+    try {
+      await toggleTodoCompletion({ id }).unwrap();
+    } catch (error) {
+      setError('Ошибка при изменении статуса задачи');
+    }
   };
 
   const editItemOnKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -114,7 +123,7 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
             onKeyUp={addItemOnKeyUpHandler}
           />
         </Form.Item>
-        <Button type="primary" onClick={handleAddTask}>
+        <Button type="primary" onClick={handleAddTask} disabled={isAdding}>
           Добавить задачу
         </Button>
       </Space>
@@ -124,10 +133,12 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
         renderItem={(task: Todolist) => (
           <List.Item
             actions={[
-              <Button onClick={(e) => { e.stopPropagation(); handleEditTask(task); }}>Обновить</Button>,
-              <Button danger onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }}>
-                Удалить
+              <Button onClick={(e) => { e.stopPropagation(); handleEditTask(task); }} disabled={isUpdating}>
+                Обновить
               </Button>,
+              <Button danger onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }} disabled={isRemoving}>
+                Удалить
+              </Button>
             ]}
             style={{
               textAlign: 'center',

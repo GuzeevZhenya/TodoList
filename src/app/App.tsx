@@ -7,6 +7,9 @@ import { Button, Spin } from 'antd';
 import { useAppDispatch, useAppSelectore } from '../feature/hooks/redux';
 import { authThunk, setIsLoggedIn } from '../feature/auth/model/authSlice';
 import { appActions } from './appSlice';
+import { clearTodolists } from '../common/common.action';
+import { logout } from '../feature/auth/model/authSlice';
+import { todoApi } from '../feature/todo/api/todoApi';
 
 export const App = () => {
   const navigate = useNavigate();
@@ -25,7 +28,9 @@ export const App = () => {
 
     }
     dispatch(appActions.setAppStatus({ status: "succeeded" }));
-  }, []);
+  }, [dispatch]);
+
+
 
 
   // if (status === 'loading') {
@@ -37,10 +42,14 @@ export const App = () => {
   // }
 
   const logOutHandler = () => {
-    dispatch(authThunk.logoutTC()).unwrap().then(() => {
-      navigate('/login');
-    });
+    dispatch(logout());
+    dispatch(appActions.setAppInitialized({ isInitialized: false }));
+    dispatch(clearTodolists());
+    dispatch(todoApi.util.resetApiState());
+    navigate('/login');
   };
+
+
   return (
     <div className="App">
       {isLoggedIn && (

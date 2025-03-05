@@ -4,6 +4,7 @@ import { todoSlice } from "../feature/todo/model/todoSlice";
 import { appSlice } from "./appSlice";
 import { authSlice } from "../feature/auth/model/authSlice";
 import { todoApi } from "../feature/todo/api/todoApi";
+import { authApi } from "../feature/auth/api/logAPI";
 
 export const store = configureStore({
   reducer: {
@@ -11,9 +12,12 @@ export const store = configureStore({
     [appSlice.name]: appSlice.reducer,
     [authSlice.name]: authSlice.reducer,
     [todoApi.reducerPath]: todoApi.reducer,
+    [authApi.reducerPath]: authApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(todoApi.middleware),
+    getDefaultMiddleware()
+      .concat(todoApi.middleware)
+      .concat(authApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
