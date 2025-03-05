@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
 import { Button, Form, Input, message } from 'antd';
 import { useAppDispatch, useAppSelectore } from '../../hooks/redux';
-import { authThunk, setIsLoggedIn } from '../model/authSlice';
+import { setIsLoggedIn } from '../model/authSlice';
 import './LoginPage.css';
 import { Navigate } from 'react-router-dom';
 import { useLoginMutation } from '../api/logAPI';

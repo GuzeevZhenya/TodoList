@@ -1,17 +1,11 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
+import {prepareHeaders} from '../../../api/apiHelper';
 
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({
     baseUrl: 'https://todo-redev.herokuapp.com/api',
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem('jwtToken');
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-      headers.set('Content-Type', 'application/json');
-      return headers;
-    },
+    prepareHeaders,
   }),
   tagTypes: ['auth'],
   endpoints: (build) => ({

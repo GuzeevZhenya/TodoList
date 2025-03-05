@@ -1,9 +1,12 @@
-import React, { useState, KeyboardEvent } from 'react';
-import { List, Button, Input, Space, Modal, Form, Spin } from 'antd';
+import React, { useState } from 'react';
+import { List, Spin } from 'antd';
 import { Todolist } from '../api/todolistsApi.types';
 import { withLogging } from '../../../Logger/Logger';
-import { ErrorSnackbar } from '../../../common/components/ErrorSnackbar';
 import { useAddTodosMutation, useGetAllTodosQuery, useRemoveTodoMutation, useToggleTodoCompletionMutation, useUpdateTodoTitleMutation } from '../api/todoApi';
+import TodoItem from './TodoItem';
+import EditTodoModal from './EditTodoModal';
+import { AddTodoForm } from './AddTodolistForm';
+
 
 interface TodoListProps {
   logEvent: (action: string, data?: any) => void;
@@ -12,35 +15,23 @@ interface TodoListProps {
 const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingTask, setEditingTask] = useState<Todolist | null>(null);
-  const [newTask, setNewTask] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const { data: tasks, isLoading, isFetching } = useGetAllTodosQuery();
 
-  const [removeTodo, { isLoading: isRemoving, isSuccess, isError }] = useRemoveTodoMutation();
+  const [removeTodo, { isLoading: isRemoving }] = useRemoveTodoMutation();
   const [addTodos, { isLoading: isAdding }] = useAddTodosMutation();
   const [updateTodoTitle, { isLoading: isUpdating }] = useUpdateTodoTitleMutation();
-  const [toggleTodoCompletion, { isLoading: isToggling }] = useToggleTodoCompletionMutation();
+  const [toggleTodoCompletion] = useToggleTodoCompletionMutation();
 
-  if (isLoading || isFetching) {
-    return <Spin size="large" tip="Загрузка..." />;
-  }
-
-  console.log(isRemoving)
-
-  const handleAddTask = async () => {
-    if (newTask.trim()) {
-      try {
-        const task = { title: newTask };
-        await addTodos(task).unwrap();
-        setNewTask('');
-        logEvent('Add element', { title: newTask });
-        setError(null);
-      } catch (error) {
-        setError('Ошибка при добавлении задачи');
-      }
-    } else {
-      setError('Title is required');
+  const handleAddTask = async (title: string) => {
+    try {
+      const task = { title };
+      await addTodos(task).unwrap();
+      logEvent('Add element', { title });
+      setError(null);
+    } catch (error) {
+      setError('Ошибка при добавлении задачи');
     }
   };
 
@@ -81,13 +72,7 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
     logEvent('Редактирование отменено');
   };
 
-  const addItemOnKeyUpHandler = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      handleAddTask();
-    }
-  };
-
-  const changeFilterHandler = async (id: string, currentFilter: boolean) => {
+  const handleToggleCompletion = async (id: string) => {
     try {
       await toggleTodoCompletion({ id }).unwrap();
     } catch (error) {
@@ -95,11 +80,9 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
     }
   };
 
-  const editItemOnKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      handleSaveEdit();
-    }
-  };
+  if (isLoading || isFetching) {
+    return <Spin size="large" tip="Загрузка..." />;
+  }
 
   return (
     <div
@@ -111,47 +94,20 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
         padding: '24px',
       }}
     >
-      <Space style={{ marginBottom: '24px' }}>
-        <Form.Item validateStatus={error ? 'error' : ''} help={error} style={{ margin: 0 }}>
-          <Input
-            placeholder="Новая задача"
-            value={newTask}
-            onChange={(e) => {
-              setNewTask(e.target.value);
-              setError(null);
-            }}
-            onKeyUp={addItemOnKeyUpHandler}
-          />
-        </Form.Item>
-        <Button type="primary" onClick={handleAddTask} disabled={isAdding}>
-          Добавить задачу
-        </Button>
-      </Space>
+      <AddTodoForm onAdd={handleAddTask} isAdding={isAdding} error={error} setError={setError} />
 
       <List
         dataSource={tasks}
         renderItem={(task: Todolist) => (
-          <List.Item
-            actions={[
-              <Button onClick={(e) => { e.stopPropagation(); handleEditTask(task); }} disabled={isUpdating}>
-                Обновить
-              </Button>,
-              <Button danger onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }} disabled={isRemoving}>
-                Удалить
-              </Button>
-            ]}
-            style={{
-              textAlign: 'center',
-              width: '100%',
-              cursor: 'pointer',
-              padding: 0,
-              textDecoration: task.isCompleted === false ? 'none' : 'line-through',
-            }}
-          >
-            <span onClick={() => changeFilterHandler(task.id, task.isCompleted)}>
-              {task.title}
-            </span>
-          </List.Item>
+          <TodoItem
+            key={task.id}
+            task={task}
+            onEdit={handleEditTask}
+            onDelete={handleDeleteTask}
+            onToggleCompletion={handleToggleCompletion}
+            isUpdating={isUpdating}
+            isRemoving={isRemoving}
+          />
         )}
         style={{
           width: '100%',
@@ -159,32 +115,14 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
         }}
       />
 
-      <Modal
-        title="Редактировать задачу"
-        visible={isModalVisible}
-        onOk={handleSaveEdit}
+      <EditTodoModal
+        isVisible={isModalVisible}
+        task={editingTask}
+        onSave={handleSaveEdit}
         onCancel={handleCancelEdit}
-        style={{
-          top: '50%',
-          transform: 'translateY(-50%)',
-        }}
-      >
-        <Form>
-          <Form.Item validateStatus={error ? 'error' : ''} help={error}>
-            <Input
-              value={editingTask?.title || ''}
-              onKeyUp={editItemOnKeyPress}
-              onChange={(e) => {
-                if (editingTask) {
-                  setEditingTask({ ...editingTask, title: e.target.value });
-                }
-                setError(null);
-              }}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
-      <ErrorSnackbar />
+        onChange={setEditingTask}
+        error={error}
+      />
     </div>
   );
 };
