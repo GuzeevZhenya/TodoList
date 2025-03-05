@@ -11,7 +11,7 @@ interface EditTodoModalProps {
   error: string | null;
 }
 
-const EditTodoModal: React.FC<EditTodoModalProps> = ({ isVisible, task, onSave, onCancel, onChange, error }) => {
+export const EditTodoModal: React.FC<EditTodoModalProps> = ({ isVisible, task, onSave, onCancel, onChange, error }) => {
   const editItemOnKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       onSave();
@@ -46,4 +46,3 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({ isVisible, task, onSave, 
   );
 };
 
-export default EditTodoModal;

@@ -3,8 +3,8 @@ import { List, Spin } from 'antd';
 import { Todolist } from '../api/todolistsApi.types';
 import { withLogging } from '../../../Logger/Logger';
 import { useAddTodosMutation, useGetAllTodosQuery, useRemoveTodoMutation, useToggleTodoCompletionMutation, useUpdateTodoTitleMutation } from '../api/todoApi';
-import TodoItem from './TodoItem';
-import EditTodoModal from './EditTodoModal';
+import { TodoItem } from './TodoItem';
+import { EditTodoModal } from './EditTodoModal';
 import { AddTodoForm } from './AddTodolistForm';
 
 

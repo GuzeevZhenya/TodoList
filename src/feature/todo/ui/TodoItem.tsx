@@ -11,7 +11,7 @@ interface TodoItemProps {
   isRemoving: boolean;
 }
 
-const TodoItem: React.FC<TodoItemProps> = ({ task, onEdit, onDelete, onToggleCompletion, isUpdating, isRemoving }) => {
+export const TodoItem: React.FC<TodoItemProps> = ({ task, onEdit, onDelete, onToggleCompletion, isUpdating, isRemoving }) => {
   return (
     <List.Item
       actions={[
@@ -37,4 +37,3 @@ const TodoItem: React.FC<TodoItemProps> = ({ task, onEdit, onDelete, onToggleCom
   );
 };
 
-export default TodoItem;
