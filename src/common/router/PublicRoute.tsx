@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAppSelectore } from '../../feature/hooks/redux';
+import { useAppSelectore } from '../hooks/redux';
 
 export const PublicRoute = () => {
   const isLoggedIn = useAppSelectore((state) => state.auth.isLoggedIn);

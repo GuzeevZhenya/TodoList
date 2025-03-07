@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { ErrorSnackbar } from '../common/components/ErrorSnackbar';
 import { Button, Spin } from 'antd';
-import { useAppDispatch, useAppSelectore } from '../feature/hooks/redux';
+import { useAppDispatch, useAppSelectore } from '../common/hooks/redux';
 import { authThunk, setIsLoggedIn } from '../feature/auth/model/authSlice';
 import { appActions } from './appSlice';
 import { clearTodolists } from '../common/common.action';

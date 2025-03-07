@@ -1,5 +1,5 @@
 import { Button, Form, Input, message } from 'antd';
-import { useAppDispatch, useAppSelectore } from '../../hooks/redux';
+import { useAppDispatch, useAppSelectore } from '../../../common/hooks/redux';
 import { setIsLoggedIn } from '../model/authSlice';
 import './LoginPage.css';
 import { Navigate } from 'react-router-dom';

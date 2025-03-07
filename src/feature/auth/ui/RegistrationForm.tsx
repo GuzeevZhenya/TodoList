@@ -1,6 +1,6 @@
 import { Button, Input, Form, Radio } from 'antd';
 import './RegistrationForm.css';
-import { useAppDispatch } from '../../hooks/redux';
+import { useAppDispatch } from '../../../common/hooks/redux';
 import { authThunk } from '../model/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';

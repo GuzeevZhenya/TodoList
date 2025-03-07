@@ -80,9 +80,9 @@ const TodoList: React.FC<TodoListProps> = ({ logEvent }) => {
     }
   };
 
-  if (isLoading || isFetching) {
-    return <Spin size="large" tip="Загрузка..." />;
-  }
+  // if (isLoading || isFetching) {
+  //   return <Spin size="large" tip="Загрузка..." />;
+  // }
 
   return (
     <div
